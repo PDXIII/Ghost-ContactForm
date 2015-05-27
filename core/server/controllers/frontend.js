@@ -15,6 +15,11 @@ var _           = require('lodash'),
     template    = require('../helpers/template'),
     routeMatch  = require('path-match')(),
 
+    // costum code for adding a contact form with nodemailer part 1
+    // this requires nodemailer
+    mailer      = require('../mail'),
+    // end of custom code part 1
+
     frontendControllers,
     staticPostPermalink = routeMatch('/:slug/:edit?');
 
@@ -385,7 +390,44 @@ frontendControllers = {
                 return res.render(defaultPage, data);
             }
         });
+    },
+    // custom code for adding a contact form with nodemailer part 2
+    // action for posting the contact form
+    submitContactForm: function (req, res) {
+
+        console.log('make something');
+        // console.log(req.query);
+
+        var mailOptions = {
+            // sender address
+            from: req.query.email,
+
+            // email receiver (add your email here)
+            to: config.mail.options.auth.user,
+
+            // subject
+            subject: req.query.subject,
+
+            // email message body
+            html: req.query.messageBody + ' - From: ' + req.query.name
+        };
+
+        //sending the email
+        mailer.send(mailOptions).then(function (data) {
+            //this is the response to the end user
+            //should ideally redirect or return a view
+            res.status(200);
+            res.send('OK');
+
+        }).error(function (error){
+
+            //response for error
+            res.status(500);
+            res.send('ERROR');
+
+        });
     }
+    // end of custom code part2
 };
 
 module.exports = frontendControllers;
