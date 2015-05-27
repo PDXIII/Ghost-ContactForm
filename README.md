@@ -4,7 +4,7 @@ This is a fork of the famous [Ghost](https://ghost.org) blogging software, which
 
 It is based on the tutorial [Ghost - Contact form using Ghost's Nodemailer](http://tarikk.com/ghost-blog-contact-form-using-ghosts-nodemailer/) by tarikk (sorry, don’t know his GitHub user name), but adds some AJAX functionality.
 
-In addition you’ll need to install the [Casper-ContactForm theme](https://github.com/PDXIII/Casper-ContactForm) in your `/content/themes/` directory to see and use the contact form.
+In addition you’ll need to install the [Casper-FormMailer theme](https://github.com/PDXIII/Casper-FormMailer) in your `/content/themes/` directory to see and use the contact form.
 
 To get it work you will also configure your __config.js__ right, especially the mail options!
 
@@ -26,8 +26,8 @@ Install Node.js.
 Clone this repository
 
 ```bash
-git clone git@github.com:PDXIII/Ghost-ContactForm.git
-cd Ghost-ContactForm
+git clone git@github.com:PDXIII/Ghost-FormMailer.git
+cd Ghost-FormMailer
 ```
 
 Install grunt. No prizes here.
