@@ -1,9 +1,9 @@
 {
-  "name": "ghost",
+  "name": "ghost-formmailer",
   "version": "0.6.4",
-  "description": "Just a blogging platform.",
-  "author": "Ghost Foundation",
-  "homepage": "http://ghost.org",
+  "description": "Just a blogging platform with a Node Mailer contact form",
+  "author": "Peter Sekan aka PDXIII",
+  "homepage": "http://petersekan.de",
   "keywords": [
     "ghost",
     "blog",
@@ -11,10 +11,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/TryGhost/Ghost.git"
+    "url": "git://https://github.com/PDXIII/Ghost-FormMailer.git"
   },
-  "bugs": "https://github.com/TryGhost/Ghost/issues",
-  "contributors": "https://github.com/TryGhost/Ghost/graphs/contributors",
+  "bugs": "https://github.com/PDXIII/Ghost-FormMailer/issues",
+  "contributors": "https://github.com/PDXIII/Ghost-FormMailer/graphs/contributors",
   "license": "MIT",
   "main": "./core/index",
   "scripts": {
