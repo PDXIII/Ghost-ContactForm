@@ -18,7 +18,7 @@ This section covers the changes in the core section of Ghost. For the necessary 
 
 The changes are quiet simple and very straight forward, but before that you’ll need to pay attention to your **config.js** and the right declaration of the **mail object.**
 
-### Config.js Espacially the Mail Object
+### Config.js Especially the Mail Object
 
 Like in any other Ghost installation you’ll need to configure the **mail object.** It should lokk similar to this:
 
