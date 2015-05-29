@@ -15,9 +15,9 @@ var _           = require('lodash'),
     template    = require('../helpers/template'),
     routeMatch  = require('path-match')(),
 
-    // costum code for adding a contact form with nodemailer part 1
-    // this requires nodemailer
-    mailer      = require('../mail'),
+    // costum code for adding a contact form with node mailer part 1
+    // this requires node mailer
+    mailer      = require('../mail'), // add node mailer
     // end of custom code part 1
 
     frontendControllers,
@@ -395,10 +395,13 @@ frontendControllers = {
     // action for posting the contact form
     submitContactForm: function (req, res) {
 
-        console.log('make something');
+        // debug output
         // console.log(req.query);
 
         var mailOptions = {
+            // the req.query must be in synch with
+            // the contact form
+            
             // sender address
             from: req.query.email,
 
@@ -427,7 +430,7 @@ frontendControllers = {
 
         });
     }
-    // end of custom code part2
+    // end of custom code part 2
 };
 
 module.exports = frontendControllers;
