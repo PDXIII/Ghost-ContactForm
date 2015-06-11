@@ -1,5 +1,7 @@
 # Ghost-ContactFrom
 
+[![Join the chat at https://gitter.im/PDXIII/Ghost-FormMailer](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/PDXIII/Ghost-FormMailer?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 This is a fork of the famous [Ghost](https://ghost.org) blogging software, which enables the use of Ghost internal Node Mailer module and mail settings to send contact forms without an third party. If you are looking for the original repositiory click [here.](http://github.com/TryGhost/Ghost/)
 
 It is based on the tutorial [Ghost - Contact form using Ghost's Nodemailer](http://tarikk.com/ghost-blog-contact-form-using-ghosts-nodemailer/) by [tariknz](https://github.com/tariknz), but added some AJAX functionality.
