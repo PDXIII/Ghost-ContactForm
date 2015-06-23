@@ -1,6 +1,6 @@
-# Ghost-ContactFrom
+# Ghost-FormMailer
 
-This is a fork of the famous [Ghost](https://ghost.org) blogging software, which enables the use of Ghost internal Node Mailer module and mail settings to send contact forms without an third party. If you are looking for the original repositiory click [here.](http://github.com/TryGhost/Ghost/)
+This is a fork of the famous [Ghost](https://ghost.org) blogging software, which enables the use of Ghost internal NodeMailer module and mail settings to send contact forms without an third party. If you are looking for the original repositiory click [here.](http://github.com/TryGhost/Ghost/)
 
 It is based on the tutorial [Ghost - Contact form using Ghost's Nodemailer](http://tarikk.com/ghost-blog-contact-form-using-ghosts-nodemailer/) by [tariknz](https://github.com/tariknz), but added some AJAX functionality.
 
@@ -10,7 +10,7 @@ To get it work you will have to configure your __config.js__ right, especially t
 
 Out of the box Ghost doesn’t provied a contact form. In the documentation you’ll find ways to embed third party services for contact forms, but in my opinion, this doesn’t make any sense, especially when you already have Node Mailer built in.
 
-To achive this several changes in the core and in the theme were necessary. Some depend on each other, so please **read the following section cerefully.**
+To achive this several changes in the core and in the theme were necessary. Some depend on each other, so please **read the following section carefully.**
 
 ## Code Changes
 
@@ -20,7 +20,7 @@ The changes are quiet simple and very straight forward, but before that you’ll
 
 ### Config.js Especially the Mail Object
 
-Like in any other Ghost installation you’ll need to configure the **mail object.** It should lokk similar to this:
+Like in any other Ghost installation you’ll need to configure the **mail object.** It should look similar to this:
 
     mail: {
         transport: 'SMTP',
