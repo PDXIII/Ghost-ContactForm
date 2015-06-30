@@ -410,8 +410,12 @@ frontendControllers = {
             // email receiver (add your email here)
             to: config.mail.options.auth.user,
 
+            // put the sender in cc
+            cc: req.query.email,
+
             // subject
-            subject: req.query.subject,
+            // subject: req.query.subject,
+            subject: req.query.name + ' likes to contact Peter Sekan via the web site',
 
             // email message body
             html: req.query.messageBody + ' - From: ' + req.query.name
