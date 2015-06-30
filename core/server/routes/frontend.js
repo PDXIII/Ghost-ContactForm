@@ -72,7 +72,12 @@ frontendRoutes = function (middleware) {
     // custom code for adding a contact form with nodemailer
     // if you want to pass arguments to the function
     // it must be router.get instead of tarikk’s router.post
-    router.get('/mail', frontend.submitContactForm);
+    router.get('/mail', function (req, res) {
+        res.setHeader('Access-Control-Allow-Origin', 'http://petersekan.de');
+        res.setHeader('Access-Control-Allow-Methods', 'GET');
+        frontend.submitContactForm
+
+    });
     // end of custom code
 
     return router;
