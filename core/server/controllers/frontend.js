@@ -411,7 +411,7 @@ frontendControllers = {
             to: config.mail.options.auth.user,
 
             // put the sender in cc
-            cc: req.query.email,
+            // cc: req.query.email,
 
             // subject
             // subject: req.query.subject,
