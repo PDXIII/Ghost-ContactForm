@@ -398,7 +398,7 @@ frontendControllers = {
     submitContactForm: function (req, res) {
         'use strict';
         // this could be important for production
-        res.header("Access-Control-Allow-Origin", "http://petersekan.de");
+        res.header("Access-Control-Allow-Origin", "*");
 
         var mailOptions = {
             // the req.query must be in synch with
