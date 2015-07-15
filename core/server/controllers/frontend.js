@@ -396,14 +396,14 @@ frontendControllers = {
     // custom code for adding a contact form with nodemailer part 2
     // action for posting the contact form
     submitContactForm: function (req, res) {
-
-        // debug output
-        // console.log(req.query);
+        'use strict';
+        // this could be important for production
+        res.header("Access-Control-Allow-Origin", "http://petersekan.de");
 
         var mailOptions = {
             // the req.query must be in synch with
             // the contact form
-            
+
             // sender address
             from: req.query.email,
 
@@ -428,7 +428,7 @@ frontendControllers = {
             res.status(200);
             res.send('OK');
 
-        }).error(function (error){
+        }).error(function (error) {
 
             //response for error
             res.status(500);
