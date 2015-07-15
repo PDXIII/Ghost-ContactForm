@@ -75,8 +75,11 @@ frontendRoutes = function (middleware) {
 
     // router.get('/mail/', middleware.authenticateClient, frontend.submitContactForm);
     // this is an experiment
-    
-    router.get('/mail/', frontend.submitContactForm);
+
+    router.get('/mail/', function (res, req) {
+        res.header("Access-Control-Allow-Origin", "*");
+        frontend.submitContactForm;
+    });
     // end of custom code
 
     return router;
