@@ -398,7 +398,13 @@ frontendControllers = {
     submitContactForm: function (req, res) {
         'use strict';
         // this could be important for production
-        res.header("Access-Control-Allow-Origin", "*");
+        res.header('Access-Control-Allow-Origin', '*');
+
+        var fullName = req.query.firstName + ' '+ req.query.lastName;
+        var messageBody = '<p><b>' + fullName + ' schrieb: </b></p>'
+          + '<blockquote>' + req.query.messageBody + "</blockquote>"
+          + '<p><b>Telefon: </b>' + req.query.phone + '</p>'
+          + '<p><b>E-Mail: </b>' + req.query.email + '</p>';
 
         var mailOptions = {
             // the req.query must be in synch with
@@ -411,14 +417,13 @@ frontendControllers = {
             to: config.mail.options.auth.user,
 
             // put the sender in cc
-            // cc: req.query.email,
+            cc: req.query.email,
 
-            // subject
             // subject: req.query.subject,
-            subject: req.query.name + ' likes to contact Peter Sekan via the web site',
+            subject: 'Anfrage von ' + fullName + ' über das Kontaktformular.',
 
             // email message body
-            html: req.query.messageBody + ' - From: ' + req.query.name
+            html: messageBody
         };
 
         //sending the email
