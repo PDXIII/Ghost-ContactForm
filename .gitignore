@@ -46,9 +46,13 @@ Session.vim
 
 /content/tmp/*
 /content/apps/*
-#/content/images/*
+/content/images/*
 /content/data/*
-#/content/themes/*
+
+# ignore all non-default themes
+/content/themes/ghost-fdm-berlin/
+/content/themes/Ghost-Theme-Template/
+/content/themes/HuebnerWerner-Ghost-Theme/
 
 !/content/themes/casper/**
 # !/README.md
