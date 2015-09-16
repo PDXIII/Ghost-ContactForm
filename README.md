@@ -52,12 +52,12 @@ The first document changed is the frontend controller, which is located under `c
         Promise     = require('bluebird'),
         template    = require('../helpers/template'),
         routeMatch  = require('path-match')(),
-    
+
         // costum code for adding a contact form with node mailer part 1
         // this requires node mailer
         mailer      = require('../mail'), // add node mailer
         // end of custom code part 1
-    
+
         frontendControllers,
         staticPostPermalink = routeMatch('/:slug/:edit?');
 
@@ -66,21 +66,21 @@ Easy, init mate? Let’s go on! This document needed another change: a new metho
     frontendControllers = {
         // a lot of methods are written here
         // and finally at the bottom comes our custom method
-    
+
         // custom code for adding a contact form with nodemailer part 2
         // action for posting the contact form
         submitContactForm: function (req, res) {
-    
+
             // debug output
             // console.log(req.query);
-    
+
             var mailOptions = {
                 // the req.query must be in synch with
                 // the contact form
-    
+
                 // sender address
                 from: req.query.email,
-    
+
                 // email receiver (add your email here)
                 // you can use the variable
                 // config.mail.options.auth.user
@@ -88,27 +88,27 @@ Easy, init mate? Let’s go on! This document needed another change: a new metho
                 // in the config.js
                 // or you add any other email address
                 to: config.mail.options.auth.user,
-    
+
                 // subject
                 subject: req.query.subject,
-    
+
                 // email message body
                 html: req.query.messageBody + ' - From: ' + req.query.name
             };
-    
+
             //sending the email
             mailer.send(mailOptions).then(function (data) {
                 //this is the response to the end user
                 //should ideally redirect or return a view
                 res.status(200);
                 res.send('OK');
-    
+
             }).error(function (error){
-    
+
                 //response for error
                 res.status(500);
                 res.send('ERROR');
-    
+
             });
         }
         // end of custom code part 2
@@ -126,16 +126,16 @@ There must be a route where the form can be posted. this needs to be declared in
         var router = express.Router(),
             subdir = config.paths.subdir,
             routeKeywords = config.routeKeywords;
-    
+
         // a lot of routes are written here
         // and finally at the bottom you find the new route
-    
+
         // custom code for adding a contact form with nodemailer
         // if you want to pass arguments to the function
         // it must be router.get instead of tariknz’ router.post
         router.get('/mail', frontend.submitContactForm);
         // end of custom code
-    
+
         return router;
     };
 

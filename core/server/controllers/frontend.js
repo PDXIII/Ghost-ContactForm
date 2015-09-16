@@ -4,8 +4,6 @@
 
 /*global require, module */
 
-/* BTW this is the pdxiii branch*/
-
 var _           = require('lodash'),
     api         = require('../api'),
     rss         = require('../data/xml/rss'),
@@ -26,7 +24,7 @@ var _           = require('lodash'),
     staticPostPermalink = routeMatch('/:slug/:edit?');
 
 function getPostPage(options) {
-    return api.settings.read('postsPerPage').then(function (response) {
+    return api.settings.read('postsPerPage').then(function then(response) {
         var postPP = response.settings[0],
             postsPerPage = parseInt(postPP.value, 10);
 
@@ -65,7 +63,12 @@ function formatResponse(post) {
 }
 
 function handleError(next) {
-    return function (err) {
+    return function handleError(err) {
+        // If we've thrown an error message of type: 'NotFound' then we found no path match.
+        if (err.errorType === 'NotFoundError') {
+            return next();
+        }
+
         return next(err);
     };
 }
@@ -75,25 +78,27 @@ function setResponseContext(req, res, data) {
         pageParam = req.params.page !== undefined ? parseInt(req.params.page, 10) : 1,
         tagPattern = new RegExp('^\\/' + config.routeKeywords.tag + '\\/'),
         authorPattern = new RegExp('^\\/' + config.routeKeywords.author + '\\/'),
-        privatePattern = new RegExp('^\\/' + config.routeKeywords.private + '\\/');
+        privatePattern = new RegExp('^\\/' + config.routeKeywords.private + '\\/'),
+        indexPattern = new RegExp('^\\/' + config.routeKeywords.page + '\\/'),
+        homePattern = new RegExp('^\\/$');
 
     // paged context
     if (!isNaN(pageParam) && pageParam > 1) {
         contexts.push('paged');
     }
 
-    if (req.route.path === '/' + config.routeKeywords.page + '/:page/') {
+    if (indexPattern.test(res.locals.relativeUrl)) {
         contexts.push('index');
-    } else if (req.route.path === '/') {
+    } else if (homePattern.test(res.locals.relativeUrl)) {
         contexts.push('home');
         contexts.push('index');
-    } else if (/\/rss\/(:page\/)?$/.test(req.route.path)) {
+    } else if (/^\/rss\//.test(res.locals.relativeUrl)) {
         contexts.push('rss');
-    } else if (privatePattern.test(req.route.path)) {
+    } else if (privatePattern.test(res.locals.relativeUrl)) {
         contexts.push('private');
-    } else if (tagPattern.test(req.route.path)) {
+    } else if (tagPattern.test(res.locals.relativeUrl)) {
         contexts.push('tag');
-    } else if (authorPattern.test(req.route.path)) {
+    } else if (authorPattern.test(res.locals.relativeUrl)) {
         contexts.push('author');
     } else if (data && data.post && data.post.page) {
         contexts.push('page');
@@ -107,7 +112,7 @@ function setResponseContext(req, res, data) {
 // Add Request context parameter to the data object
 // to be passed down to the templates
 function setReqCtx(req, data) {
-    (Array.isArray(data) ? data : [data]).forEach(function (d) {
+    (Array.isArray(data) ? data : [data]).forEach(function forEach(d) {
         d.secure = req.secure;
     });
 }
@@ -122,7 +127,7 @@ function getActiveThemePaths() {
         context: {
             internal: true
         }
-    }).then(function (response) {
+    }).then(function then(response) {
         var activeTheme = response.settings[0],
             paths = config.paths.availableThemes[activeTheme.value];
 
@@ -137,8 +142,8 @@ function getActiveThemePaths() {
 * Returns a function that takes the post to be rendered.
 */
 function renderPost(req, res) {
-    return function (post) {
-        return getActiveThemePaths().then(function (paths) {
+    return function renderPost(post) {
+        return getActiveThemePaths().then(function then(paths) {
             var view = template.getThemeViewForPost(paths, post),
                 response = formatResponse(post);
 
@@ -183,7 +188,7 @@ function renderChannel(channelOpts) {
             return res.redirect(createUrl());
         }
 
-        return getPostPage(options).then(function (page) {
+        return getPostPage(options).then(function then(page) {
             // If page is greater than number of pages we have, redirect to last page
             if (pageParam > page.meta.pagination.pages) {
                 return res.redirect(createUrl(page.meta.pagination.pages));
@@ -196,8 +201,8 @@ function renderChannel(channelOpts) {
                 setReqCtx(req, filter);
             }
 
-            filters.doFilter('prePostsRender', page.posts, res.locals).then(function (posts) {
-                getActiveThemePaths().then(function (paths) {
+            filters.doFilter('prePostsRender', page.posts, res.locals).then(function then(posts) {
+                getActiveThemePaths().then(function then(paths) {
                     var view = 'index',
                         result,
                         extra = {};
@@ -248,14 +253,14 @@ frontendControllers = {
         filter: 'author',
         slugTemplate: true
     }),
-    preview: function (req, res, next) {
+    preview: function preview(req, res, next) {
         var params = {
                 uuid: req.params.uuid,
                 status: 'all',
                 include: 'author,tags,fields'
             };
 
-        api.posts.read(params).then(function (result) {
+        api.posts.read(params).then(function then(result) {
             var post = result.posts[0];
 
             if (!post) {
@@ -270,21 +275,15 @@ frontendControllers = {
 
             filters.doFilter('prePostsRender', post, res.locals)
                 .then(renderPost(req, res));
-        }).catch(function (err) {
-            if (err.errorType === 'NotFoundError') {
-                return next();
-            }
-
-            return handleError(next)(err);
-        });
+        }).catch(handleError(next));
     },
 
-    single: function (req, res, next) {
+    single: function single(req, res, next) {
         var postPath = req.path,
             params,
             usingStaticPermalink = false;
 
-        api.settings.read('permalinks').then(function (response) {
+        api.settings.read('permalinks').then(function then(response) {
             var permalink = response.settings[0].value,
                 editFormat,
                 postLookup,
@@ -321,7 +320,7 @@ frontendControllers = {
 
             // Query database to find post
             return api.posts.read(postLookup);
-        }).then(function (result) {
+        }).then(function then(result) {
             var post = result.posts[0],
                 postUrl = (params.edit) ? postPath.replace(params.edit + '/', '') : postPath;
 
@@ -365,21 +364,12 @@ frontendControllers = {
             } else {
                 return next();
             }
-        }).catch(function (err) {
-            // If we've thrown an error message
-            // of type: 'NotFound' then we found
-            // no path match.
-            if (err.errorType === 'NotFoundError') {
-                return next();
-            }
-
-            return handleError(next)(err);
-        });
+        }).catch(handleError(next));
     },
     rss: rss,
-    private: function (req, res) {
+    private: function private(req, res) {
         var defaultPage = path.resolve(config.paths.adminViews, 'private.hbs');
-        return getActiveThemePaths().then(function (paths) {
+        return getActiveThemePaths().then(function then(paths) {
             var data = {};
             if (res.error) {
                 data.error = res.error;

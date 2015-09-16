@@ -2,7 +2,7 @@ import Ember from 'ember';
 import DS from 'ember-data';
 import ValidationEngine from 'ghost/mixins/validation-engine';
 
-var Post = DS.Model.extend(ValidationEngine, {
+export default DS.Model.extend(ValidationEngine, {
     validationType: 'post',
 
     uuid: DS.attr('string'),
@@ -27,6 +27,9 @@ var Post = DS.Model.extend(ValidationEngine, {
     created_by: DS.attr(),
     tags: DS.hasMany('tag', {embedded: 'always'}),
     url: DS.attr('string'),
+
+    config: Ember.inject.service(),
+    ghostPaths: Ember.inject.service('ghost-paths'),
 
     absoluteUrl: Ember.computed('url', 'ghostPaths.url', 'config.blogUrl', function () {
         var blogUrl = this.get('config.blogUrl'),
@@ -56,6 +59,7 @@ var Post = DS.Model.extend(ValidationEngine, {
     // remove client-generated tags, which have `id: null`.
     // Ember Data won't recognize/update them automatically
     // when returned from the server with ids.
+    // https://github.com/emberjs/data/issues/1829
     updateTags: function () {
         var tags = this.get('tags'),
             oldTags = tags.filterBy('id', null);
@@ -69,5 +73,3 @@ var Post = DS.Model.extend(ValidationEngine, {
     }
 
 });
-
-export default Post;

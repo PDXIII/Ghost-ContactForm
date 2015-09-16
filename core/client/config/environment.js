@@ -32,6 +32,13 @@ module.exports = function (environment) {
 
             serverTokenEndpoint: '<overriden by initializers/simple-auth-env>',
             serverTokenRevocationEndpoint: '<overriden by initializers/simple-auth-env>'
+        },
+
+        resizeServiceDefaults: {
+            debounceTimeout: 100,
+            heightSensitive: false,
+            widthSensitive: true,
+            injectionFactories: []
         }
     };
 
@@ -41,9 +48,6 @@ module.exports = function (environment) {
         ENV.APP.LOG_TRANSITIONS = true;
         ENV.APP.LOG_TRANSITIONS_INTERNAL = true;
         ENV.APP.LOG_VIEW_LOOKUPS = true;
-        ENV.mythOptions = {
-            sourcemap: true
-        };
     }
 
     if (environment === 'test') {
@@ -56,17 +60,6 @@ module.exports = function (environment) {
         ENV.APP.LOG_VIEW_LOOKUPS = false;
 
         ENV.APP.rootElement = '#ember-testing';
-        ENV.mythOptions = {
-            compress: true,
-            outputFile: 'ghost.min.css'
-        };
-    }
-
-    if (environment === 'production') {
-        ENV.mythOptions = {
-            compress: true,
-            outputFile: 'ghost.min.css'
-        };
     }
 
     return ENV;

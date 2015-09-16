@@ -1,14 +1,10 @@
 import Ember from 'ember';
-var NotificationsComponent = Ember.Component.extend({
+
+export default Ember.Component.extend({
     tagName: 'aside',
     classNames: 'gh-notifications',
 
-    messages: Ember.computed.filter('notifications', function (notification) {
-        var displayStatus = (typeof notification.toJSON === 'function') ?
-            notification.get('status') : notification.status;
+    notifications: Ember.inject.service(),
 
-        return displayStatus === 'passive';
-    })
+    messages: Ember.computed.alias('notifications.notifications')
 });
-
-export default NotificationsComponent;

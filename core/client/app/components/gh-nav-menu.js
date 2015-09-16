@@ -5,25 +5,29 @@ export default Ember.Component.extend({
     classNames: ['gh-nav'],
     classNameBindings: ['open'],
 
+    config: Ember.inject.service(),
+
     open: false,
 
-    autoNav: null,
-
     mouseEnter: function () {
-        if (!this.get('autoNav')) {
-            return;
-        }
-
-        this.set('open', true);
+        this.sendAction('onMouseEnter');
     },
 
     actions: {
-        toggleMaximise: function () {
+        toggleAutoNav: function () {
             this.sendAction('toggleMaximise');
         },
 
         openModal: function (modal) {
             this.sendAction('openModal', modal);
+        },
+
+        closeMobileMenu: function () {
+            this.sendAction('closeMobileMenu');
+        },
+
+        openAutoNav: function () {
+            this.sendAction('openAutoNav');
         }
     }
 });

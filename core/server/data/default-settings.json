@@ -1,7 +1,7 @@
 {
     "core": {
         "databaseVersion": {
-            "defaultValue": "003"
+            "defaultValue": "004"
         },
         "dbHash": {
             "defaultValue": null
@@ -19,13 +19,6 @@
         },
         "description": {
             "defaultValue": "Just a blogging platform."
-        },
-        "email": {
-            "defaultValue": "ghost@example.com",
-            "validations": {
-                "isNull": false,
-                "isEmail": true
-            }
         },
         "logo": {
             "defaultValue": ""
@@ -73,12 +66,6 @@
         },
         "navigation": {
             "defaultValue": "[{\"label\":\"Home\", \"url\":\"/\"}]"
-        },
-        "isPrivate": {
-            "defaultValue": "false"
-        },
-        "password": {
-            "defaultValue": ""
         }
     },
     "theme": {
@@ -92,6 +79,14 @@
         },
         "installedApps": {
             "defaultValue": "[]"
+        }
+    },
+    "private": {
+        "isPrivate": {
+            "defaultValue": "false"
+        },
+        "password": {
+            "defaultValue": ""
         }
     }
 }

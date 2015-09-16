@@ -1,4 +1,5 @@
 import Ember from 'ember';
+import DS from 'ember-data';
 import {request as ajax} from 'ic-ajax';
 import Configuration from 'simple-auth/configuration';
 import styleBody from 'ghost/mixins/style-body';
@@ -6,9 +7,12 @@ import styleBody from 'ghost/mixins/style-body';
 export default Ember.Route.extend(styleBody, {
     classNames: ['ghost-signup'],
 
+    ghostPaths: Ember.inject.service('ghost-paths'),
+    notifications: Ember.inject.service(),
+
     beforeModel: function () {
         if (this.get('session').isAuthenticated) {
-            this.notifications.showWarn('You need to sign out to register as a new user.', {delayed: true});
+            this.get('notifications').showAlert('You need to sign out to register as a new user.', {type: 'warn', delayed: true});
             this.transitionTo(Configuration.routeAfterAuthentication);
         }
     },
@@ -22,7 +26,7 @@ export default Ember.Route.extend(styleBody, {
 
         return new Ember.RSVP.Promise(function (resolve) {
             if (!re.test(params.token)) {
-                self.notifications.showError('Invalid token.', {delayed: true});
+                self.get('notifications').showAlert('Invalid token.', {type: 'error', delayed: true});
 
                 return resolve(self.transitionTo('signin'));
             }
@@ -32,6 +36,7 @@ export default Ember.Route.extend(styleBody, {
 
             model.set('email', email);
             model.set('token', params.token);
+            model.set('errors', DS.Errors.create());
 
             return ajax({
                 url: self.get('ghostPaths.url').api('authentication', 'invitation'),
@@ -42,7 +47,7 @@ export default Ember.Route.extend(styleBody, {
                 }
             }).then(function (response) {
                 if (response && response.invitation && response.invitation[0].valid === false) {
-                    self.notifications.showError('The invitation does not exist or is no longer valid.', {delayed: true});
+                    self.get('notifications').showAlert('The invitation does not exist or is no longer valid.', {type: 'warn', delayed: true});
 
                     return resolve(self.transitionTo('signin'));
                 }

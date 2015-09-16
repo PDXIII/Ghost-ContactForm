@@ -6,15 +6,18 @@ import Configuration from 'simple-auth/configuration';
 import ShortcutsRoute from 'ghost/mixins/shortcuts-route';
 import ctrlOrCmd from 'ghost/utils/ctrl-or-cmd';
 
-var ApplicationRoute,
-    shortcuts = {};
+var shortcuts = {};
 
-shortcuts.esc = {action: 'closePopups', scope: 'all'};
+shortcuts.esc = {action: 'closeMenus', scope: 'all'};
 shortcuts.enter = {action: 'confirmModal', scope: 'modal'};
 shortcuts[ctrlOrCmd + '+s'] = {action: 'save', scope: 'all'};
 
-ApplicationRoute = Ember.Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
+export default Ember.Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
     shortcuts: shortcuts,
+
+    config: Ember.inject.service(),
+    dropdown: Ember.inject.service(),
+    notifications: Ember.inject.service(),
 
     afterModel: function (model, transition) {
         if (this.get('session').isAuthenticated) {
@@ -27,30 +30,25 @@ ApplicationRoute = Ember.Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
     },
 
     actions: {
-        toggleGlobalMobileNav: function () {
-            this.toggleProperty('controller.showGlobalMobileNav');
+        openMobileMenu: function () {
+            this.controller.set('showMobileMenu', true);
         },
 
         openSettingsMenu: function () {
-            this.set('controller.showSettingsMenu', true);
+            this.controller.set('showSettingsMenu', true);
         },
 
-        closeSettingsMenu: function () {
-            this.set('controller.showSettingsMenu', false);
-        },
-
-        toggleSettingsMenu: function () {
-            this.toggleProperty('controller.showSettingsMenu');
-        },
-
-        closePopups: function () {
+        closeMenus: function () {
             this.get('dropdown').closeDropdowns();
-            this.get('notifications').closeAll();
-
-            // Close right outlet if open
-            this.send('closeSettingsMenu');
-
             this.send('closeModal');
+            this.controller.setProperties({
+                showSettingsMenu: false,
+                showMobileMenu: false
+            });
+        },
+
+        didTransition: function () {
+            this.send('closeMenus');
         },
 
         signedIn: function () {
@@ -67,11 +65,9 @@ ApplicationRoute = Ember.Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
                 error.errors.forEach(function (err) {
                     err.message = err.message.htmlSafe();
                 });
-
-                this.notifications.showErrors(error.errors);
             } else {
-                // connection errors don't return proper status message, only req.body
-                this.notifications.showError('There was a problem on the server.');
+                // Connection errors don't return proper status message, only req.body
+                this.get('notifications').showAlert('There was a problem on the server.', {type: 'error'});
             }
         },
 
@@ -96,7 +92,7 @@ ApplicationRoute = Ember.Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
         },
 
         sessionInvalidationFailed: function (error) {
-            this.notifications.showError(error.message);
+            this.get('notifications').showAlert(error.message, {type: 'error'});
         },
 
         openModal: function (modalName, model, type) {
@@ -149,7 +145,7 @@ ApplicationRoute = Ember.Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
                     if (!user.get('isAuthor') && !user.get('isEditor')) {
                         self.store.findAll('notification').then(function (serverNotifications) {
                             serverNotifications.forEach(function (notification) {
-                                self.notifications.handleNotification(notification, isDelayed);
+                                self.get('notifications').handleNotification(notification, isDelayed);
                             });
                         });
                     }
@@ -157,22 +153,7 @@ ApplicationRoute = Ember.Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
             }
         },
 
-        handleErrors: function (errors) {
-            var self = this;
-
-            this.notifications.clear();
-            errors.forEach(function (errorObj) {
-                self.notifications.showError(errorObj.message || errorObj);
-
-                if (errorObj.hasOwnProperty('el')) {
-                    errorObj.el.addClass('input-error');
-                }
-            });
-        },
-
         // noop default for unhandled save (used from shortcuts)
         save: Ember.K
     }
 });
-
-export default ApplicationRoute;
