@@ -1,7 +1,7 @@
 {
   "name": "ghost-formmailer",
   "version": "0.7.1",
-  "description": "Just a blogging platform with a Node Mailer contact form",
+  "description": "Just a blogging platform with a Node Mailer contact form.",
   "author": "Peter Sekan aka PDXIII",
   "homepage": "http://petersekan.de",
   "keywords": [
