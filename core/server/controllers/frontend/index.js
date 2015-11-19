@@ -316,7 +316,7 @@ frontendControllers = {
         });
     }
     // end of custom code part 2
-    }
+    
 };
 
 module.exports = frontendControllers;

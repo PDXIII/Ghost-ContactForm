@@ -1,7 +1,3 @@
-[submodule "content/themes/casper"]
-	path = content/themes/casper
-	url = https://github.com/PDXIII/Casper-FormMailer.git
-
 [submodule "content/themes/ghost-fdm-berlin"]
 	path = content/themes/ghost-fdm-berlin
 	url = https://github.com/PDXIII/ghost-fdm-berlin.git
@@ -13,3 +9,7 @@
 [submodule "content/themes/HuebnerWerner-Ghost-Theme"]
 	path = content/themes/HuebnerWerner-Ghost-Theme.git
 	url = https://github.com/PDXIII/HuebnerWerner-Ghost-Theme
+
+[submodule "content/themes/casper"]
+	path = content/themes/casper
+	url = https://github.com/PDXIII/Casper-FormMailer.git
