@@ -351,6 +351,10 @@ var _              = require('lodash'),
                     command: 'npm shrinkwrap'
                 },
 
+                dedupe: {
+                    command: 'npm dedupe'
+                },
+
                 csscombfix: {
                     command: path.resolve(cwd + '/node_modules/.bin/csscomb -c core/client/app/styles/csscomb.json -v core/client/app/styles')
                 },
@@ -582,7 +586,7 @@ var _              = require('lodash'),
 
         grunt.registerTask('test', function (test) {
             if (!test) {
-                grunt.log.write('no test provided');
+                grunt.fail.fatal('No test provided. `grunt test` expects a filename. e.g.: `grunt test:unit/apps_spec.js`. Did you mean `npm test` or `grunt validate`?');
             }
 
             grunt.task.run('test-setup', 'shell:test:' + test);
@@ -609,7 +613,7 @@ var _              = require('lodash'),
         // details of each of the test suites.
         //
         grunt.registerTask('test-all', 'Run tests and lint code',
-            ['test-routes', 'test-module', 'test-unit', 'test-integration', 'test-ember', 'test-functional']);
+            ['test-routes', 'test-module', 'test-unit', 'test-integration', 'test-ember']);
 
         // ### Lint
         //
@@ -926,7 +930,7 @@ var _              = require('lodash'),
             ' - Copy files to release-folder/#/#{version} directory\n' +
             ' - Clean out unnecessary files (travis, .git*, etc)\n' +
             ' - Zip files in release-folder to dist-folder/#{version} directory',
-            ['init', 'shell:ember:prod', 'clean:release',  'shell:shrinkwrap', 'copy:release', 'compress:release']);
+            ['init', 'shell:ember:prod', 'clean:release',  'shell:dedupe', 'shell:shrinkwrap', 'copy:release', 'compress:release']);
     };
 
 module.exports = configureGrunt;
