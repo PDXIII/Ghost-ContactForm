@@ -394,7 +394,7 @@ frontendControllers = {
         var messageBody = '<p><b>' + fullName + ' schrieb: </b></p>'
           + '<blockquote>' + req.query.messageBody + "</blockquote>"
           + '<p><b>Telefon: </b>' + req.query.phone + '</p>'
-          + '<p><b>E-Mail: </b>' + req.query.email + '</p>';
+          + '<p><b>E-Mail: </b><a href="'+ req.query.email + '">' + req.query.email + '</a></p>';
 
         var mailOptions = {
             // the req.query must be in synch with
