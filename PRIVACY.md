@@ -32,6 +32,9 @@ Ghost outputs basic meta tags to allow rich snippets of your content to be recog
 - Schema.org - [http://schema.org/docs/documents.html](http://schema.org/docs/documents.html)
 - Open Graph - [http://ogp.me/](http://ogp.me/)
 - Twitter cards - [https://dev.twitter.com/cards/overview](https://dev.twitter.com/cards/overview)
+- Schema.org - [http://schema.org/docs/documents.html](http://schema.org/docs/documents.html)
+- Open Graph - [http://ogp.me/](http://ogp.me/)
+- Twitter cards - [https://dev.twitter.com/cards/overview](https://dev.twitter.com/cards/overview)
 
 ### Default Theme
 The default theme which comes with Ghost loads a copy of jQuery from the jQuery Foundation's [public CDN](https://code.jquery.com/jquery-1.11.3.min.js). The theme also contains three sharing buttons to [Twitter](http://twitter.com), [Facebook](http://facebook.com), and [Google Plus](http://plus.google.com). No resources are loaded from any services, however the buttons do allow visitors to your blog to share your content publicly on these respective networks.

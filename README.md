@@ -154,8 +154,8 @@ Ghost is also compatible with **Node v0.12** and **io.js v1.2**, but please note
 Install Node.js.
 
 ```bash
-# Node v0.10.x - full support
-# Node v0.12.x and io.js v1.2 - partial support
+# Node v0.10.x - recommended
+# Node v0.12.x and v4.2.x - supported
 #
 # Choose wisely
 ```
@@ -200,4 +200,4 @@ npm start
 ```
 
 ## Copyright & License
-Copyright (c) 2015 PDXIII aka Peter Sekan - Released under the [MIT license](LICENSE).
+Copyright (c) 2016 PDXIII aka Peter Sekan - Released under the [MIT license](LICENSE).

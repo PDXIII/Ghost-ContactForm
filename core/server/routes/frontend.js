@@ -119,6 +119,7 @@ frontendRoutes = function frontendRoutes(middleware) {
   // end of custom code
 
   return router;
+
 };
 
 module.exports = frontendRoutes;
