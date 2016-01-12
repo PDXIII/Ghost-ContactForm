@@ -1,6 +1,6 @@
 {
   "name": "ghost-formmailer",
-  "version": "0.7.1",
+  "version": "0.7.4",
   "description": "Just a blogging platform with a Node Mailer contact form.",
   "author": "Peter Sekan aka PDXIII",
   "homepage": "http://petersekan.de",
@@ -18,11 +18,12 @@
   "license": "MIT",
   "main": "./core/index",
   "scripts": {
+    "preinstall": "npm install semver && node -e \"require('./core/server/utils/startup-check.js').nodeVersion()\"",
     "start": "node index",
     "test": "grunt validate --verbose"
   },
   "engines": {
-    "node": "~0.10.0 || ~0.12.0",
+    "node": "~0.10.0 || ~0.12.0 || ~4.2.0",
     "iojs": "~1.2.0"
   },
   "dependencies": {
@@ -62,8 +63,8 @@
     "rss": "1.2.0",
     "semver": "5.0.3",
     "showdown-ghost": "0.3.6",
-    "sqlite3": "3.1.0",
-    "unidecode": "0.1.7",
+    "sqlite3": "3.1.1",
+    "unidecode": "0.1.8",
     "validator": "4.1.0",
     "xml": "1.0.0"
   },
@@ -81,14 +82,16 @@
     "grunt-contrib-compress": "0.13.0",
     "grunt-contrib-copy": "0.8.0",
     "grunt-contrib-jshint": "0.11.2",
+    "grunt-contrib-uglify": "0.11.0",
     "grunt-contrib-watch": "0.6.1",
     "grunt-docker": "0.0.10",
     "grunt-express-server": "0.5.1",
-    "grunt-jscs": "2.1.0",
+    "grunt-jscs": "2.4.0",
     "grunt-mocha-cli": "1.13.0",
     "grunt-mocha-istanbul": "2.4.0",
     "grunt-shell": "1.1.2",
     "grunt-update-submodules": "0.4.1",
+    "istanbul": "0.4.1",
     "jscs-jsdoc": "1.2.0",
     "matchdep": "0.3.0",
     "nock": "2.3.0",
