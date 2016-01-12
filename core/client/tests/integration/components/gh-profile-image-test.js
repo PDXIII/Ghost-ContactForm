@@ -8,17 +8,18 @@ import {
 import hbs from 'htmlbars-inline-precompile';
 import Ember from 'ember';
 
-const {run} = Ember,
-      pathsStub = Ember.Service.extend({
-          url: {
-              api: function () {
-                  return '';
-              },
-              asset: function (src) {
-                  return src;
-              }
-          }
-      });
+const {run} = Ember;
+
+let pathsStub = Ember.Service.extend({
+    url: {
+        api() {
+            return '';
+        },
+        asset(src) {
+            return src;
+        }
+    }
+});
 
 describeComponent(
     'gh-profile-image',
@@ -42,9 +43,20 @@ describeComponent(
             expect(this.$()).to.have.length(1);
         });
 
+        it('renders and tears down ok with fileStorage:false', function () {
+            this.set('fileStorage', false);
+
+            this.render(hbs`
+                {{gh-profile-image fileStorage=fileStorage}}
+            `);
+
+            expect(this.$()).to.have.length(1);
+            expect(this.$('input')).to.have.length(0);
+        }),
+
         it('immediately renders the gravatar if valid email supplied', function () {
-            let email = 'test@example.com',
-                expectedUrl = `http://www.gravatar.com/avatar/${md5(email)}?s=100&d=blank`;
+            let email = 'test@example.com';
+            let expectedUrl = `http://www.gravatar.com/avatar/${md5(email)}?s=100&d=blank`;
 
             this.set('email', email);
 
@@ -57,8 +69,8 @@ describeComponent(
         });
 
         it('throttles gravatar loading as email is changed', function (done) {
-            let email = 'test@example.com',
-                expectedUrl = `http://www.gravatar.com/avatar/${md5(email)}?s=100&d=blank`;
+            let email = 'test@example.com';
+            let expectedUrl = `http://www.gravatar.com/avatar/${md5(email)}?s=100&d=blank`;
 
             this.set('email', 'test');
 

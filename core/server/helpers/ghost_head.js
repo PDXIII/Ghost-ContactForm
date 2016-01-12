@@ -15,36 +15,34 @@ var hbs             = require('express-hbs'),
     filters         = require('../filters'),
 
     api                 = require('../api'),
+    assetHelper         = require('./asset'),
     urlHelper           = require('./url'),
     meta_description    = require('./meta_description'),
     meta_title          = require('./meta_title'),
     excerpt             = require('./excerpt'),
     tagsHelper          = require('./tags'),
     imageHelper         = require('./image'),
-
     labs                = require('../utils/labs'),
 
     blog,
     ghost_head;
 
 function getClient() {
-    return labs.isSet('publicAPI').then(function (publicAPI) {
-        if (publicAPI === true) {
-            return api.clients.read({slug: 'ghost-frontend'}).then(function (client) {
-                client = client.clients[0];
-                if (client.status === 'enabled') {
-                    return {
-                        id: client.slug,
-                        secret: client.secret
-                    };
-                }
+    if (labs.isSet('publicAPI') === true) {
+        return api.clients.read({slug: 'ghost-frontend'}).then(function (client) {
+            client = client.clients[0];
+            if (client.status === 'enabled') {
+                return {
+                    id: client.slug,
+                    secret: client.secret
+                };
+            }
 
-                return {};
-            });
-        }
+            return {};
+        });
+    }
 
-        return {};
-    });
+    return {};
 }
 
 function writeMetaTag(property, content, type) {
@@ -111,6 +109,7 @@ function addContextMetaData(context, data, metaData) {
 function initMetaData(context, data, results) {
     var metaData = {
         url: results.url,
+        canonicalUrl: results.canonicalUrl,
         metaDescription: results.meta_description || null,
         metaTitle: results.meta_title,
         coverImage:  results.image,
@@ -150,7 +149,7 @@ function getStructuredData(metaData) {
         'og:type': metaData.ogType,
         'og:title': metaData.metaTitle,
         'og:description': metaData.metaDescription,
-        'og:url': metaData.url,
+        'og:url': metaData.canonicalUrl,
         'og:image': metaData.coverImage,
         'article:published_time': metaData.publishedDate,
         'article:modified_time': metaData.modifiedDate,
@@ -158,7 +157,7 @@ function getStructuredData(metaData) {
         'twitter:card': metaData.card,
         'twitter:title': metaData.metaTitle,
         'twitter:description': metaData.metaDescription,
-        'twitter:url': metaData.url,
+        'twitter:url': metaData.canonicalUrl,
         'twitter:image:src': metaData.coverImage
     };
 
@@ -279,7 +278,23 @@ function finaliseSchema(schema, head) {
     return head;
 }
 
+function getAjaxHelper(clientId, clientSecret) {
+    return '<script type="text/javascript" src="' +
+        assetHelper('shared/ghost-url.js', {hash: {minifyInProduction: true}}) + '"></script>\n' +
+        '<script type="text/javascript">\n' +
+        'ghost.init({\n' +
+        '\tclientId: "' + clientId + '",\n' +
+        '\tclientSecret: "' + clientSecret + '"\n' +
+        '});\n' +
+        '</script>';
+}
+
 ghost_head = function (options) {
+    // if error page do nothing
+    if (this.code >= 400) {
+        return;
+    }
+
     // create a shortcut for theme config
     blog = config.theme;
 
@@ -293,10 +308,12 @@ ghost_head = function (options) {
         schema,
         title = hbs.handlebars.Utils.escapeExpression(blog.title),
         context = self.context ? self.context[0] : null,
-        contextObject = self[context] || blog;
+        contextObject = _.cloneDeep(self[context] || blog);
 
     // Store Async calls in an object of named promises
     props.url = urlHelper.call(self, {hash: {absolute: true}});
+    props.canonicalUrl = config.urlJoin(config.getBaseUrl(false),
+        urlHelper.call(self, {hash: {absolute: false}}));
     props.meta_description = meta_description.call(self, options);
     props.meta_title = meta_title.call(self, options);
     props.client = getClient();
@@ -316,7 +333,7 @@ ghost_head = function (options) {
             }
 
             // head is our main array that holds our meta data
-            head.push('<link rel="canonical" href="' + metaData.url + '" />');
+            head.push('<link rel="canonical" href="' + metaData.canonicalUrl + '" />');
             head.push('<meta name="referrer" content="origin" />');
 
             // Generate context driven pagination urls
@@ -339,14 +356,14 @@ ghost_head = function (options) {
             }
 
             if (metaData.clientId && metaData.clientSecret) {
-                head.push(writeMetaTag('ghost:client_id', metaData.clientId));
-                head.push(writeMetaTag('ghost:client_secret', metaData.clientSecret));
+                head.push(getAjaxHelper(metaData.clientId, metaData.clientSecret));
             }
         }
 
         head.push('<meta name="generator" content="Ghost ' + safeVersion + '" />');
         head.push('<link rel="alternate" type="application/rss+xml" title="' +
-            title  + '" href="' + config.urlFor('rss', null, true) + '" />');
+            title  + '" href="' + config.urlFor('rss', {secure: self.secure},
+            true) + '" />');
     }).then(function () {
         return api.settings.read({key: 'ghost_head'});
     }).then(function (response) {

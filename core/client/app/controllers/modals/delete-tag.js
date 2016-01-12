@@ -1,16 +1,18 @@
 import Ember from 'ember';
 
-export default Ember.Controller.extend({
-    notifications: Ember.inject.service(),
-    application: Ember.inject.controller(),
+const {Controller, computed, inject} = Ember;
 
-    postInflection: Ember.computed('model.post_count', function () {
-        return this.get('model.post_count') > 1 ? 'posts' : 'post';
+export default Controller.extend({
+    application: inject.controller(),
+    notifications: inject.service(),
+
+    postInflection: computed('model.count.posts', function () {
+        return this.get('model.count.posts') > 1 ? 'posts' : 'post';
     }),
 
     actions: {
-        confirmAccept: function () {
-            var tag = this.get('model');
+        confirmAccept() {
+            let tag = this.get('model');
 
             this.send('closeMenus');
 
@@ -25,7 +27,7 @@ export default Ember.Controller.extend({
             });
         },
 
-        confirmReject: function () {
+        confirmReject() {
             return false;
         }
     },

@@ -7,7 +7,7 @@
         </section>
     </header>
 
-    {{#gh-tags-management-container mobileWidth=mobileWidth tags=tags selectedTag=selectedTag enteredMobile="enteredMobile" leftMobile="leftMobile" as |container|}}
+    {{#gh-tags-management-container tags=tags selectedTag=selectedTag enteredMobile="enteredMobile" leftMobile="leftMobile" as |container|}}
         {{#gh-infinite-scroll
             fetch="loadNextPage"
             isLoading=isLoading
@@ -20,7 +20,7 @@
                             <span class="tag-title">{{tag.name}}</span>
                             <span class="label label-default">/{{tag.slug}}</span>
                             <p class="tag-description">{{tag.description}}</p>
-                            <span class="tags-count">{{tag.post_count}}</span>
+                            <span class="tags-count">{{tag.count.posts}}</span>
                         {{/link-to}}
                     </div>
                 {{/each}}
