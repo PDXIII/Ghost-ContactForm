@@ -7,14 +7,15 @@ import {
 
 describeComponent(
     'gh-search-input',
-    'GhSearchInputComponent',
+    'Unit: Component: gh-search-input',
     {
+        unit: true,
         needs: ['component:gh-selectize']
     },
     function () {
         it('renders', function () {
             // creates the component instance
-            var component = this.subject();
+            let component = this.subject();
             expect(component._state).to.equal('preRender');
 
             // renders the component on the page

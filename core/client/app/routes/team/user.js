@@ -1,65 +1,58 @@
+/* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
 import AuthenticatedRoute from 'ghost/routes/authenticated';
 import CurrentUserSettings from 'ghost/mixins/current-user-settings';
 import styleBody from 'ghost/mixins/style-body';
+import NotFoundHandler from 'ghost/mixins/404-handler';
 
-var TeamUserRoute = AuthenticatedRoute.extend(styleBody, CurrentUserSettings, {
+export default AuthenticatedRoute.extend(styleBody, CurrentUserSettings, NotFoundHandler, {
     titleToken: 'Team - User',
 
     classNames: ['team-view-user'],
 
-    model: function (params) {
-        var self = this;
-        // TODO: Make custom user adapter that uses /api/users/:slug endpoint
-        // return this.store.find('user', { slug: params.slug });
-
-        // Instead, get all the users and then find by slug
-        return this.store.find('user').then(function (result) {
-            var user = result.findBy('slug', params.slug);
-
-            if (!user) {
-                return self.transitionTo('error404', 'team/' + params.slug);
-            }
-
-            return user;
-        });
+    model(params) {
+        return this.store.queryRecord('user', {slug: params.user_slug});
     },
 
-    afterModel: function (user) {
-        var self = this;
-        return this.get('session.user').then(function (currentUser) {
-            var isOwnProfile = user.get('id') === currentUser.get('id'),
-                isAuthor = currentUser.get('isAuthor'),
-                isEditor = currentUser.get('isEditor');
+    serialize(model) {
+        return {user_slug: model.get('slug')};
+    },
+
+    afterModel(user) {
+        this._super(...arguments);
+
+        return this.get('session.user').then((currentUser) => {
+            let isOwnProfile = user.get('id') === currentUser.get('id');
+            let isAuthor = currentUser.get('isAuthor');
+            let isEditor = currentUser.get('isEditor');
+
             if (isAuthor && !isOwnProfile) {
-                self.transitionTo('team.user', currentUser);
+                this.transitionTo('team.user', currentUser);
             } else if (isEditor && !isOwnProfile && !user.get('isAuthor')) {
-                self.transitionTo('team');
+                this.transitionTo('team');
             }
         });
     },
 
-    deactivate: function () {
-        var model = this.modelFor('team.user');
+    deactivate() {
+        let model = this.modelFor('team.user');
 
         // we want to revert any unsaved changes on exit
-        if (model && model.get('isDirty')) {
-            model.rollback();
+        if (model && model.get('hasDirtyAttributes')) {
+            model.rollbackAttributes();
         }
 
         model.get('errors').clear();
 
-        this._super();
+        this._super(...arguments);
     },
 
     actions: {
-        didTransition: function () {
+        didTransition() {
             this.modelFor('team.user').get('errors').clear();
         },
 
-        save: function () {
+        save() {
             this.get('controller').send('save');
         }
     }
 });
-
-export default TeamUserRoute;

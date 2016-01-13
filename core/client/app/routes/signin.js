@@ -1,37 +1,42 @@
 import Ember from 'ember';
-import Configuration from 'simple-auth/configuration';
 import styleBody from 'ghost/mixins/style-body';
+import Configuration from 'ember-simple-auth/configuration';
 import DS from 'ember-data';
 
-var SigninRoute = Ember.Route.extend(styleBody, {
+const {Route, inject} = Ember;
+const {Errors} = DS;
+
+export default Route.extend(styleBody, {
     titleToken: 'Sign In',
 
     classNames: ['ghost-login'],
 
-    beforeModel: function () {
-        if (this.get('session').isAuthenticated) {
-            this.transitionTo(Configuration.routeAfterAuthentication);
+    session: inject.service(),
+
+    beforeModel() {
+        this._super(...arguments);
+
+        if (this.get('session.isAuthenticated')) {
+            this.transitionTo(Configuration.routeIfAlreadyAuthenticated);
         }
     },
 
-    model: function () {
+    model() {
         return Ember.Object.create({
             identification: '',
             password: '',
-            errors: DS.Errors.create()
+            errors: Errors.create()
         });
     },
 
     // the deactivate hook is called after a route has been exited.
-    deactivate: function () {
-        this._super();
+    deactivate() {
+        let controller = this.controllerFor('signin');
 
-        var controller = this.controllerFor('signin');
+        this._super(...arguments);
 
         // clear the properties that hold the credentials when we're no longer on the signin screen
         controller.set('model.identification', '');
         controller.set('model.password', '');
     }
 });
-
-export default SigninRoute;

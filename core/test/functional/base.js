@@ -206,6 +206,12 @@ casper.thenOpenAndWaitForPageLoad = function (screen, then, timeout) {
     timeout = timeout || casper.failOnTimeout(casper.test, 'Unable to load ' + screen);
 
     return casper.thenOpen(url + screens[screen].url).then(function () {
+        // HACK: phantomjs + flexbox = nope. Fix offending styles here.
+        casper.evaluate(function () {
+            var style = document.createElement('style');
+            style.innerHTML = '.gh-main > section { width: auto; }';
+            document.body.appendChild(style);
+        });
         return casper.waitForScreenLoad(screen, then, timeout);
     });
 };
@@ -285,7 +291,7 @@ casper.on('error', function (msg, trace) {
     if (trace && trace[0]) {
         casper.echoConcise('file:     ' + trace[0].file, 'WARNING');
         casper.echoConcise('line:     ' + trace[0].line, 'WARNING');
-        casper.echoConcise('function: ' + trace[0]['function'], 'WARNING');
+        casper.echoConcise('function: ' + trace[0].function, 'WARNING');
     }
     jsErrors.push(msg);
 });
@@ -296,7 +302,7 @@ casper.on('page.error', function (msg, trace) {
     if (trace && trace[0]) {
         casper.echoConcise('file:     ' + trace[0].file, 'WARNING');
         casper.echoConcise('line:     ' + trace[0].line, 'WARNING');
-        casper.echoConcise('function: ' + trace[0]['function'], 'WARNING');
+        casper.echoConcise('function: ' + trace[0].function, 'WARNING');
     }
     pageErrors.push(msg);
 });
@@ -453,7 +459,7 @@ CasperTest.Routines = (function () {
                 casper.captureScreenshot('signing_in2.png');
             });
 
-            casper.waitForResource(/posts\/\?status=all&staticPages=all/, function then() {
+            casper.waitForResource(/posts\/\?(?=.*status=all)(?=.*staticPages=all)/, function then() {
                 casper.captureScreenshot('signing_in.png');
             }, function timeout() {
                 casper.test.fail('Unable to signin and load admin panel');

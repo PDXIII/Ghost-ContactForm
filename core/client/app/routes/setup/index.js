@@ -1,9 +1,10 @@
 import Ember from 'ember';
 
-var SetupRoute = Ember.Route.extend({
-    beforeModel: function () {
+const {Route} = Ember;
+
+export default Route.extend({
+    beforeModel() {
+        this._super(...arguments);
         this.transitionTo('setup.one');
     }
 });
-
-export default SetupRoute;

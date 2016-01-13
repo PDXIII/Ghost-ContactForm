@@ -7,15 +7,16 @@ import {
 
 describeComponent(
     'gh-app',
-    'GhAppComponent',
+    'Unit: Component: gh-app',
     {
-    // specify the other units that are required for this test
-    // needs: ['component:foo', 'helper:bar']
+        unit: true
+        // specify the other units that are required for this test
+        // needs: ['component:foo', 'helper:bar']
     },
     function () {
         it('renders', function () {
             // creates the component instance
-            var component = this.subject();
+            let component = this.subject();
 
             expect(component._state).to.equal('preRender');
 

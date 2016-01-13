@@ -3,54 +3,53 @@ import PostModel from 'ghost/models/post';
 import boundOneWay from 'ghost/utils/bound-one-way';
 import imageManager from 'ghost/utils/ed-image-manager';
 
+const {Mixin, RSVP, computed, inject, observer, run} = Ember;
+const {alias} = computed;
+
 // this array will hold properties we need to watch
-// to know if the model has been changed (`controller.isDirty`)
-var watchedProps = ['model.scratch', 'model.titleScratch', 'model.isDirty', 'model.tags.[]'];
+// to know if the model has been changed (`controller.hasDirtyAttributes`)
+const watchedProps = ['model.scratch', 'model.titleScratch', 'model.hasDirtyAttributes', 'model.tags.[]'];
 
 PostModel.eachAttribute(function (name) {
-    watchedProps.push('model.' + name);
+    watchedProps.push(`model.${name}`);
 });
 
-export default Ember.Mixin.create({
-    postSettingsMenuController: Ember.inject.controller('post-settings-menu'),
-
-    autoSaveId: null,
-    timedSaveId: null,
+export default Mixin.create({
+    _autoSaveId: null,
+    _timedSaveId: null,
     editor: null,
     submitting: false,
 
-    notifications: Ember.inject.service(),
+    postSettingsMenuController: inject.controller('post-settings-menu'),
+    notifications: inject.service(),
 
-    init: function () {
-        var self = this;
-
-        this._super();
-
-        window.onbeforeunload = function () {
-            return self.get('isDirty') ? self.unloadDirtyMessage() : null;
+    init() {
+        this._super(...arguments);
+        window.onbeforeunload = () => {
+            return this.get('hasDirtyAttributes') ? this.unloadDirtyMessage() : null;
         };
     },
 
-    shouldFocusTitle: Ember.computed.alias('model.isNew'),
+    shouldFocusTitle: alias('model.isNew'),
     shouldFocusEditor: false,
 
-    autoSave: Ember.observer('model.scratch', function () {
+    autoSave: observer('model.scratch', function () {
         // Don't save just because we swapped out models
         if (this.get('model.isDraft') && !this.get('model.isNew')) {
-            var autoSaveId,
-                timedSaveId,
-                saveOptions;
+            let autoSaveId,
+                saveOptions,
+                timedSaveId;
 
             saveOptions = {
                 silent: true,
                 backgroundSave: true
             };
 
-            timedSaveId = Ember.run.throttle(this, 'send', 'save', saveOptions, 60000, false);
-            this.set('timedSaveId', timedSaveId);
+            timedSaveId = run.throttle(this, 'send', 'save', saveOptions, 60000, false);
+            this._timedSaveId = timedSaveId;
 
-            autoSaveId = Ember.run.debounce(this, 'send', 'save', saveOptions, 3000);
-            this.set('autoSaveId', autoSaveId);
+            autoSaveId = run.debounce(this, 'send', 'save', saveOptions, 3000);
+            this._autoSaveId = autoSaveId;
         }
     }),
 
@@ -61,23 +60,23 @@ export default Ember.Mixin.create({
      */
     willPublish: boundOneWay('model.isPublished'),
 
-    // set by the editor route and `isDirty`. useful when checking
-    // whether the number of tags has changed for `isDirty`.
+    // set by the editor route and `hasDirtyAttributes`. useful when checking
+    // whether the number of tags has changed for `hasDirtyAttributes`.
     previousTagNames: null,
 
-    tagNames: Ember.computed('model.tags.@each.name', function () {
+    tagNames: computed('model.tags.@each.name', function () {
         return this.get('model.tags').mapBy('name');
     }),
 
-    postOrPage: Ember.computed('model.page', function () {
+    postOrPage: computed('model.page', function () {
         return this.get('model.page') ? 'Page' : 'Post';
     }),
 
     // compares previousTagNames to tagNames
-    tagNamesEqual: function () {
-        var tagNames = this.get('tagNames'),
-            previousTagNames = this.get('previousTagNames'),
-            hashCurrent,
+    tagNamesEqual() {
+        let tagNames = this.get('tagNames');
+        let previousTagNames = this.get('previousTagNames');
+        let hashCurrent,
             hashPrevious;
 
         // beware! even if they have the same length,
@@ -95,37 +94,37 @@ export default Ember.Mixin.create({
     },
 
     // a hook created in editor-base-route's setupController
-    modelSaved: function () {
-        var model = this.get('model');
+    modelSaved() {
+        let model = this.get('model');
 
         // safer to updateTags on save in one place
         // rather than in all other places save is called
         model.updateTags();
 
-        // set previousTagNames to current tagNames for isDirty check
+        // set previousTagNames to current tagNames for hasDirtyAttributes check
         this.set('previousTagNames', this.get('tagNames'));
 
-        // `updateTags` triggers `isDirty => true`.
+        // `updateTags` triggers `hasDirtyAttributes => true`.
         // for a saved model it would otherwise be false.
 
         // if the two "scratch" properties (title and content) match the model, then
-        // it's ok to set isDirty to false
+        // it's ok to set hasDirtyAttributes to false
         if (model.get('titleScratch') === model.get('title') &&
             model.get('scratch') === model.get('markdown')) {
-            this.set('isDirty', false);
+            this.set('hasDirtyAttributes', false);
         }
     },
 
     // an ugly hack, but necessary to watch all the model's properties
     // and more, without having to be explicit and do it manually
-    isDirty: Ember.computed.apply(Ember, watchedProps.concat({
-        get: function () {
-            var model = this.get('model'),
-                markdown = model.get('markdown'),
-                title = model.get('title'),
-                titleScratch = model.get('titleScratch'),
-                scratch = this.get('editor').getValue(),
-                changedAttributes;
+    hasDirtyAttributes: computed.apply(Ember, watchedProps.concat({
+        get() {
+            let model = this.get('model');
+            let markdown = model.get('markdown');
+            let title = model.get('title');
+            let titleScratch = model.get('titleScratch');
+            let scratch = this.get('editor').getValue();
+            let changedAttributes;
 
             if (!this.tagNamesEqual()) {
                 return true;
@@ -147,10 +146,10 @@ export default Ember.Mixin.create({
                 return true;
             }
 
-            // models created on the client always return `isDirty: true`,
+            // models created on the client always return `hasDirtyAttributes: true`,
             // so we need to see which properties have actually changed.
             if (model.get('isNew')) {
-                changedAttributes = Ember.keys(model.changedAttributes());
+                changedAttributes = Object.keys(model.changedAttributes());
 
                 if (changedAttributes.length) {
                     return true;
@@ -160,18 +159,18 @@ export default Ember.Mixin.create({
             }
 
             // even though we use the `scratch` prop to show edits,
-            // which does *not* change the model's `isDirty` property,
-            // `isDirty` will tell us if the other props have changed,
+            // which does *not* change the model's `hasDirtyAttributes` property,
+            // `hasDirtyAttributes` will tell us if the other props have changed,
             // as long as the model is not new (model.isNew === false).
-            return model.get('isDirty');
+            return model.get('hasDirtyAttributes');
         },
-        set: function (key, value) {
+        set(key, value) {
             return value;
         }
     })),
 
     // used on window.onbeforeunload
-    unloadDirtyMessage: function () {
+    unloadDirtyMessage() {
         return '==============================\n\n' +
             'Hey there! It looks like you\'re in the middle of writing' +
             ' something and you haven\'t saved all of your content.' +
@@ -211,11 +210,11 @@ export default Ember.Mixin.create({
     },
 
     // TODO: Update for new notification click-action API
-    showSaveNotification: function (prevStatus, status, delay) {
-        var message = this.messageMap.success.post[prevStatus][status],
-            path = this.get('model.absoluteUrl'),
-            type = this.get('postOrPage'),
-            notifications = this.get('notifications');
+    showSaveNotification(prevStatus, status, delay) {
+        let message = this.messageMap.success.post[prevStatus][status];
+        let path = this.get('model.absoluteUrl');
+        let type = this.get('postOrPage');
+        let notifications = this.get('notifications');
 
         if (status === 'published') {
             message += `&nbsp;<a href="${path}">View ${type}</a>`;
@@ -224,10 +223,10 @@ export default Ember.Mixin.create({
         notifications.showNotification(message.htmlSafe(), {delayed: delay});
     },
 
-    showErrorAlert: function (prevStatus, status, errors, delay) {
-        var message = this.messageMap.errors.post[prevStatus][status],
-            notifications = this.get('notifications'),
-            error;
+    showErrorAlert(prevStatus, status, errors, delay) {
+        let message = this.messageMap.errors.post[prevStatus][status];
+        let notifications = this.get('notifications');
+        let error;
 
         function isString(str) {
             /*global toString*/
@@ -244,21 +243,21 @@ export default Ember.Mixin.create({
             error = 'Unknown Error';
         }
 
-        message += '<br />' + error;
+        message += `<br />${error}`;
+        message = Ember.String.htmlSafe(message);
 
-        notifications.showAlert(message.htmlSafe(), {type: 'error', delayed: delay});
+        notifications.showAlert(message, {type: 'error', delayed: delay, key: 'post.save'});
     },
 
     actions: {
-        save: function (options) {
-            var status,
-                prevStatus = this.get('model.status'),
-                isNew = this.get('model.isNew'),
-                autoSaveId = this.get('autoSaveId'),
-                timedSaveId = this.get('timedSaveId'),
-                self = this,
-                psmController = this.get('postSettingsMenuController'),
-                promise;
+        save(options) {
+            let status;
+            let prevStatus = this.get('model.status');
+            let isNew = this.get('model.isNew');
+            let autoSaveId = this._autoSaveId;
+            let timedSaveId = this._timedSaveId;
+            let psmController = this.get('postSettingsMenuController');
+            let promise;
 
             options = options || {};
 
@@ -279,13 +278,13 @@ export default Ember.Mixin.create({
             }
 
             if (autoSaveId) {
-                Ember.run.cancel(autoSaveId);
-                this.set('autoSaveId', null);
+                run.cancel(autoSaveId);
+                this._autoSaveId = null;
             }
 
             if (timedSaveId) {
-                Ember.run.cancel(timedSaveId);
-                this.set('timedSaveId', null);
+                run.cancel(timedSaveId);
+                this._timedSaveId = null;
             }
 
             // Set the properties that are indirected
@@ -305,30 +304,30 @@ export default Ember.Mixin.create({
             if (!this.get('model.slug')) {
                 // Cancel any pending slug generation that may still be queued in the
                 // run loop because we need to run it before the post is saved.
-                Ember.run.cancel(psmController.get('debounceId'));
+                run.cancel(psmController.get('debounceId'));
 
                 psmController.generateAndSetSlug('model.slug');
             }
 
-            promise = Ember.RSVP.resolve(psmController.get('lastPromise')).then(function () {
-                return self.get('model').save(options).then(function (model) {
+            promise = RSVP.resolve(psmController.get('lastPromise')).then(() => {
+                return this.get('model').save(options).then((model) => {
                     if (!options.silent) {
-                        self.showSaveNotification(prevStatus, model.get('status'), isNew ? true : false);
+                        this.showSaveNotification(prevStatus, model.get('status'), isNew ? true : false);
                     }
 
-                    self.toggleProperty('submitting');
+                    this.toggleProperty('submitting');
                     return model;
                 });
-            }).catch(function (errors) {
+            }).catch((errors) => {
                 if (!options.silent) {
-                    errors = errors || self.get('model.errors.messages');
-                    self.showErrorAlert(prevStatus, self.get('model.status'), errors);
+                    errors = errors || this.get('model.errors.messages');
+                    this.showErrorAlert(prevStatus, this.get('model.status'), errors);
                 }
 
-                self.set('model.status', prevStatus);
+                this.set('model.status', prevStatus);
 
-                self.toggleProperty('submitting');
-                return self.get('model');
+                this.toggleProperty('submitting');
+                return this.get('model');
             });
 
             psmController.set('lastPromise', promise);
@@ -336,7 +335,7 @@ export default Ember.Mixin.create({
             return promise;
         },
 
-        setSaveType: function (newType) {
+        setSaveType(newType) {
             if (newType === 'publish') {
                 this.set('willPublish', true);
             } else if (newType === 'draft') {
@@ -346,48 +345,48 @@ export default Ember.Mixin.create({
 
         // set from a `sendAction` on the gh-ed-editor component,
         // so that we get a reference for handling uploads.
-        setEditor: function (editor) {
+        setEditor(editor) {
             this.set('editor', editor);
         },
 
         // fired from the gh-ed-preview component when an image upload starts
-        disableEditor: function () {
+        disableEditor() {
             this.get('editor').disable();
         },
 
         // fired from the gh-ed-preview component when an image upload finishes
-        enableEditor: function () {
+        enableEditor() {
             this.get('editor').enable();
         },
 
         // Match the uploaded file to a line in the editor, and update that line with a path reference
         // ensuring that everything ends up in the correct place and format.
-        handleImgUpload: function (e, resultSrc) {
-            var editor = this.get('editor'),
-                editorValue = editor.getValue(),
-                replacement = imageManager.getSrcRange(editorValue, e.target),
-                cursorPosition;
+        handleImgUpload(e, resultSrc) {
+            let editor = this.get('editor');
+            let editorValue = editor.getValue();
+            let replacement = imageManager.getSrcRange(editorValue, e.target);
+            let cursorPosition;
 
             if (replacement) {
                 cursorPosition = replacement.start + resultSrc.length + 1;
                 if (replacement.needsParens) {
-                    resultSrc = '(' + resultSrc + ')';
+                    resultSrc = `(${resultSrc})`;
                 }
                 editor.replaceSelection(resultSrc, replacement.start, replacement.end, cursorPosition);
             }
         },
 
-        autoSaveNew: function () {
+        autoSaveNew() {
             if (this.get('model.isNew')) {
                 this.send('save', {silent: true, backgroundSave: true});
             }
         },
 
-        updateEditorScrollInfo: function (scrollInfo) {
+        updateEditorScrollInfo(scrollInfo) {
             this.set('editorScrollInfo', scrollInfo);
         },
 
-        updateHeight: function (height) {
+        updateHeight(height) {
             this.set('height', height);
         }
     }

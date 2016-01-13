@@ -50,6 +50,7 @@ Session.vim
 /content/data/*
 
 # ignore all non-default themes
+#/content/themes/casper/
 /content/themes/ghost-fdm-berlin/
 /content/themes/Ghost-Theme-Template/
 /content/themes/HuebnerWerner-Ghost-Theme/
@@ -67,10 +68,13 @@ CHANGELOG.md
 
 config.js
 /core/client/config.js
+!/core/client/app/mirage/config.js
+!/core/client/app/services/config.js
 
 # Built asset files
 /core/built
 /core/server/views/default.hbs
+/core/shared/ghost-url.min.js
 
 # Coverage reports
 coverage.html

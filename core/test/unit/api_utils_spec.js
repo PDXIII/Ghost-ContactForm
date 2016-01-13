@@ -18,7 +18,7 @@ describe('API Utils', function () {
     describe('Default Options', function () {
         it('should provide a set of default options', function () {
             apiUtils.globalDefaultOptions.should.eql(['context', 'include']);
-            apiUtils.browseDefaultOptions.should.eql(['page', 'limit', 'fields']);
+            apiUtils.browseDefaultOptions.should.eql(['page', 'limit', 'fields', 'filter', 'order', 'debug']);
             apiUtils.dataDefaultOptions.should.eql(['data']);
             apiUtils.idDefaultOptions.should.eql(['id']);
         });
@@ -163,7 +163,7 @@ describe('API Utils', function () {
             ).then(function () {
                 done(new Error('Should have thrown a validation error'));
             }).catch(function (err) {
-                err.should.have.enumerable('0').with.property('errorType', 'ValidationError');
+                err.should.have.property('errorType', 'ValidationError');
                 done();
             });
         });
@@ -217,9 +217,9 @@ describe('API Utils', function () {
             check('limit', valid, invalid);
         });
 
-        it('can validate `slug` or `status` or `author` etc as a-z, 0-9 and -', function () {
-            valid = ['hello-world', 'hello', '1-2-3', 1, '-1', -1];
-            invalid = ['hello_world', '!things', '?other-things', 'thing"', '`ticks`'];
+        it('can validate `slug` or `status` or `author` etc as a-z, 0-9, - and _', function () {
+            valid = ['hello-world', 'hello', '1-2-3', 1, '-1', -1, 'hello_world'];
+            invalid = ['hello~world', '!things', '?other-things', 'thing"', '`ticks`'];
 
             check('slug', valid, invalid);
             check('status', valid, invalid);
@@ -406,7 +406,7 @@ describe('API Utils', function () {
     describe('isPublicContext', function () {
         it('should call out to permissions', function () {
             var permsStub = sandbox.stub(permissions, 'parseContext').returns({public: true});
-            apiUtils.isPublicContext({context: 'test'}).should.be.true;
+            apiUtils.detectPublicContext({context: 'test'}).should.be.true;
             permsStub.called.should.be.true;
             permsStub.calledWith('test').should.be.true;
         });
@@ -424,7 +424,7 @@ describe('API Utils', function () {
     describe('handlePublicPermissions', function () {
         it('should return empty options if passed empty options', function (done) {
             apiUtils.handlePublicPermissions('tests', 'test')({}).then(function (options) {
-                options.should.eql({});
+                options.should.eql({context: {app: null, internal: false, public: true, user: null}});
                 done();
             }).catch(done);
         });
@@ -433,7 +433,7 @@ describe('API Utils', function () {
             var aPPStub = sandbox.stub(apiUtils, 'applyPublicPermissions').returns(Promise.resolve({}));
             apiUtils.handlePublicPermissions('tests', 'test')({}).then(function (options) {
                 aPPStub.calledOnce.should.eql(true);
-                options.should.eql({});
+                options.should.eql({context: {app: null, internal: false, public: true, user: null}});
                 done();
             }).catch(done);
         });
@@ -449,7 +449,7 @@ describe('API Utils', function () {
             apiUtils.handlePublicPermissions('tests', 'test')({context: {user: 1}}).then(function (options) {
                 cTStub.calledOnce.should.eql(true);
                 cTMethodStub.test.test.calledOnce.should.eql(true);
-                options.should.eql({context: {user: 1}});
+                options.should.eql({context: {app: null, internal: false, public: false, user: 1}});
                 done();
             }).catch(done);
         });

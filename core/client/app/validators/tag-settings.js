@@ -1,9 +1,10 @@
 import BaseValidator from './base';
 
-var TagSettingsValidator = BaseValidator.create({
-    properties: ['name', 'metaTitle', 'metaDescription'],
-    name: function (model) {
-        var name = model.get('name');
+export default BaseValidator.create({
+    properties: ['name', 'slug', 'description', 'metaTitle', 'metaDescription'],
+
+    name(model) {
+        let name = model.get('name');
 
         if (validator.empty(name)) {
             model.get('errors').add('name', 'You must specify a name for the tag.');
@@ -16,16 +17,36 @@ var TagSettingsValidator = BaseValidator.create({
             this.invalidate();
         }
     },
-    metaTitle: function (model) {
-        var metaTitle = model.get('meta_title');
+
+    slug(model) {
+        let slug = model.get('slug');
+
+        if (!validator.isLength(slug, 0, 150)) {
+            model.get('errors').add('slug', 'URL cannot be longer than 150 characters.');
+            this.invalidate();
+        }
+    },
+
+    description(model) {
+        let description = model.get('description');
+
+        if (!validator.isLength(description, 0, 200)) {
+            model.get('errors').add('description', 'Description cannot be longer than 200 characters.');
+            this.invalidate();
+        }
+    },
+
+    metaTitle(model) {
+        let metaTitle = model.get('meta_title');
 
         if (!validator.isLength(metaTitle, 0, 150)) {
             model.get('errors').add('meta_title', 'Meta Title cannot be longer than 150 characters.');
             this.invalidate();
         }
     },
-    metaDescription: function (model) {
-        var metaDescription = model.get('meta_description');
+
+    metaDescription(model) {
+        let metaDescription = model.get('meta_description');
 
         if (!validator.isLength(metaDescription, 0, 200)) {
             model.get('errors').add('meta_description', 'Meta Description cannot be longer than 200 characters.');
@@ -33,5 +54,3 @@ var TagSettingsValidator = BaseValidator.create({
         }
     }
 });
-
-export default TagSettingsValidator;

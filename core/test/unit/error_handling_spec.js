@@ -1,17 +1,16 @@
-/*globals describe, before, beforeEach, afterEach, it*/
+/*globals describe, after, before, beforeEach, afterEach, it*/
 /*jshint expr:true*/
 var should     = require('should'),
     Promise    = require('bluebird'),
     sinon      = require('sinon'),
     express    = require('express'),
     rewire     = require('rewire'),
-    _          = require('lodash'),
 
     // Stuff we are testing
-
     chalk      = require('chalk'),
-    config     = rewire('../../server/config'),
     errors     = rewire('../../server/errors'),
+    configUtils = require('../utils/configUtils'),
+
     // storing current environment
     currentEnv = process.env.NODE_ENV;
 
@@ -26,7 +25,7 @@ describe('Error handling', function () {
                     errors.throwError(toThrow);
                 };
 
-            runThrowError.should['throw']('test1');
+            runThrowError.should.throw('test1');
         });
 
         it('throws error strings', function () {
@@ -35,7 +34,7 @@ describe('Error handling', function () {
                     errors.throwError(toThrow);
                 };
 
-            runThrowError.should['throw']('test2');
+            runThrowError.should.throw('test2');
         });
 
         it('throws error even if nothing passed', function () {
@@ -43,7 +42,7 @@ describe('Error handling', function () {
                 errors.throwError();
             };
 
-            runThrowError.should['throw']('An error occurred');
+            runThrowError.should.throw('An error occurred');
         });
     });
 
@@ -276,13 +275,47 @@ describe('Error handling', function () {
         });
     });
 
+    describe('API Error Handlers', function () {
+        var sandbox, req, res, next;
+
+        beforeEach(function () {
+            sandbox = sinon.sandbox.create();
+            req = {};
+            res = {};
+            res.json = sandbox.spy();
+            res.status = sandbox.stub().returns(res);
+            next = sandbox.spy();
+        });
+
+        afterEach(function () {
+            sandbox.restore();
+        });
+
+        it('handleAPIError: sends a JSON error response', function () {
+            errors.logError = sandbox.spy(errors, 'logError');
+            errors.formatHttpErrors = sandbox.spy(errors, 'formatHttpErrors');
+
+            var msg = 'Something got lost',
+                err = new errors.NotFoundError(msg);
+
+            errors.handleAPIError(err, req, res, next);
+
+            next.called.should.be.false;
+            errors.logError.calledOnce.should.be.true;
+            errors.formatHttpErrors.calledOnce.should.be.true;
+
+            res.status.calledWith(404).should.be.true;
+            res.json.calledOnce.should.be.true;
+            res.json.firstCall.args[0].errors[0].message.should.eql(msg);
+            res.json.firstCall.args[0].errors[0].errorType.should.eql('NotFoundError');
+        });
+    });
+
     describe('Rendering', function () {
-        var sandbox,
-            originalConfig;
+        var sandbox;
 
         before(function () {
-            originalConfig = _.cloneDeep(config._config);
-            errors.__set__('getConfigModule', sinon.stub().returns(_.merge({}, originalConfig, {
+            configUtils.set({
                 paths: {
                     themePath: '/content/themes',
                     availableThemes: {
@@ -298,8 +331,13 @@ describe('Error handling', function () {
                         }
                     }
                 }
-            })));
+            });
+
             errors.updateActiveTheme('casper');
+        });
+
+        after(function () {
+            configUtils.restore();
         });
 
         beforeEach(function () {

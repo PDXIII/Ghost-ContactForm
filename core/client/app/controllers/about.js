@@ -1,12 +1,13 @@
 import Ember from 'ember';
-var AboutController = Ember.Controller.extend({
+
+const {Controller} = Ember;
+
+export default Controller.extend({
     updateNotificationCount: 0,
 
     actions: {
-        updateNotificationChange: function (count) {
+        updateNotificationChange(count) {
             this.set('updateNotificationCount', count);
         }
     }
 });
-
-export default AboutController;

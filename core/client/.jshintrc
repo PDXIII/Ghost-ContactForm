@@ -1,10 +1,10 @@
 {
   "predef": [
+    "server",
     "document",
     "window",
     "-Promise",
     "-Notification",
-    "$",
     "validator",
     "moment"
   ],

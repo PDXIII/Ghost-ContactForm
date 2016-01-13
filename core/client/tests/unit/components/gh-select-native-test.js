@@ -7,15 +7,16 @@ import {
 
 describeComponent(
     'gh-select-native',
-    'GhSelectNativeComponent',
+    'Unit: Component: gh-select-native',
     {
+        unit: true
         // specify the other units that are required for this test
         // needs: ['component:foo', 'helper:bar']
     },
     function () {
         it('renders', function () {
             // creates the component instance
-            var component = this.subject();
+            let component = this.subject();
 
             expect(component._state).to.equal('preRender');
 

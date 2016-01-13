@@ -1,9 +1,13 @@
 import Ember from 'ember';
 
-export function isEqual(params/*, hash*/) {
-    var [lhs, rhs] = params;
+const {Helper} = Ember;
+
+export function isEqual(params) {
+    let [lhs, rhs] = params;
 
     return lhs === rhs;
 }
 
-export default Ember.HTMLBars.makeBoundHelper(isEqual);
+export default Helper.helper(function (params) {
+    return isEqual(params);
+});

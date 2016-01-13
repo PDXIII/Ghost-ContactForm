@@ -1,8 +1,12 @@
+/* global key */
+/* jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
 import Ember from 'ember';
 import {request as ajax} from 'ic-ajax';
-/* global key */
 
-export default Ember.Component.extend({
+const {$, Component, RSVP, computed, inject, observer} = Ember;
+const {filterBy} = computed;
+
+export default Component.extend({
 
     selection: null,
     content: [],
@@ -10,48 +14,50 @@ export default Ember.Component.extend({
     contentExpiry: 10 * 1000,
     contentExpiresAt: false,
 
-    posts: Ember.computed.filterBy('content', 'category', 'Posts'),
-    pages: Ember.computed.filterBy('content', 'category', 'Pages'),
-    users: Ember.computed.filterBy('content', 'category', 'Users'),
+    posts: filterBy('content', 'category', 'Posts'),
+    pages: filterBy('content', 'category', 'Pages'),
+    users: filterBy('content', 'category', 'Users'),
+    tags:  filterBy('content', 'category', 'Tags'),
 
-    _store: Ember.inject.service('store'),
-    _routing: Ember.inject.service('-routing'),
-    _selectize: Ember.computed(function () {
+    _store: inject.service('store'),
+    _routing: inject.service('-routing'),
+
+    _selectize: computed(function () {
         return this.$('select')[0].selectize;
     }),
 
-    refreshContent: function () {
-        var promises = [],
-            now = new Date(),
-            contentExpiry = this.get('contentExpiry'),
-            contentExpiresAt = this.get('contentExpiresAt'),
-            self = this;
+    refreshContent() {
+        let promises = [];
+        let now = new Date();
+        let contentExpiry = this.get('contentExpiry');
+        let contentExpiresAt = this.get('contentExpiresAt');
 
-        if (self.get('isLoading') || contentExpiresAt > now) { return; }
+        if (this.get('isLoading') || contentExpiresAt > now) {
+            return;
+        }
 
-        self.set('isLoading', true);
+        this.set('isLoading', true);
+        this.set('content', []);
         promises.pushObject(this._loadPosts());
         promises.pushObject(this._loadUsers());
+        promises.pushObject(this._loadTags());
 
-        Ember.RSVP.all(promises).then(function () { }).finally(function () {
-            self.set('isLoading', false);
-            self.set('contentExpiresAt', new Date(now.getTime() + contentExpiry));
+        RSVP.all(promises).then(() => { }).finally(() => {
+            this.set('isLoading', false);
+            this.set('contentExpiresAt', new Date(now.getTime() + contentExpiry));
         });
     },
 
-    _loadPosts: function () {
-        var store = this.get('_store'),
-            postsUrl = store.adapterFor('post').urlForFindQuery({}, 'post') + '/',
-            postsQuery = {fields: 'id,title,page', limit: 'all', status: 'all', staticPages: 'all'},
-            content = this.get('content'),
-            self = this;
+    _loadPosts() {
+        let store = this.get('_store');
+        let postsUrl = `${store.adapterFor('post').urlForQuery({}, 'post')}/`;
+        let postsQuery = {fields: 'id,title,page', limit: 'all', status: 'all', staticPages: 'all'};
+        let content = this.get('content');
 
-        return ajax(postsUrl, {data: postsQuery}).then(function (posts) {
-            content.removeObjects(self.get('posts'));
-            content.removeObjects(self.get('pages'));
-            content.pushObjects(posts.posts.map(function (post) {
+        return ajax(postsUrl, {data: postsQuery}).then((posts) => {
+            content.pushObjects(posts.posts.map((post) => {
                 return {
-                    id: post.id,
+                    id: `post.${post.id}`,
                     title: post.title,
                     category: post.page ? 'Pages' : 'Posts'
                 };
@@ -59,18 +65,16 @@ export default Ember.Component.extend({
         });
     },
 
-    _loadUsers: function () {
-        var store = this.get('_store'),
-            usersUrl = store.adapterFor('user').urlForFindQuery({}, 'user') + '/',
-            usersQuery = {fields: 'name,slug', limit: 'all'},
-            content = this.get('content'),
-            self = this;
+    _loadUsers() {
+        let store = this.get('_store');
+        let usersUrl = `${store.adapterFor('user').urlForQuery({}, 'user')}/`;
+        let usersQuery = {fields: 'name,slug', limit: 'all'};
+        let content = this.get('content');
 
-        return ajax(usersUrl, {data: usersQuery}).then(function (users) {
-            content.removeObjects(self.get('users'));
-            content.pushObjects(users.users.map(function (user) {
+        return ajax(usersUrl, {data: usersQuery}).then((users) => {
+            content.pushObjects(users.users.map((user) => {
                 return {
-                    id: user.slug,
+                    id: `user.${user.slug}`,
                     title: user.name,
                     category: 'Users'
                 };
@@ -78,73 +82,99 @@ export default Ember.Component.extend({
         });
     },
 
-    _keepSelectionClear: Ember.observer('selection', function () {
+    _loadTags() {
+        let store = this.get('_store');
+        let tagsUrl = `${store.adapterFor('tag').urlForQuery({}, 'tag')}/`;
+        let tagsQuery = {fields: 'name,slug', limit: 'all'};
+        let content = this.get('content');
+
+        return ajax(tagsUrl, {data: tagsQuery}).then((tags) => {
+            content.pushObjects(tags.tags.map((tag) => {
+                return {
+                    id: `tag.${tag.slug}`,
+                    title: tag.name,
+                    category: 'Tags'
+                };
+            }));
+        });
+    },
+
+    _keepSelectionClear: observer('selection', function () {
         if (this.get('selection') !== null) {
             this.set('selection', null);
         }
     }),
 
-    _setKeymasterScope: function () {
+    _setKeymasterScope() {
         key.setScope('search-input');
     },
 
-    _resetKeymasterScope: function () {
+    _resetKeymasterScope() {
         key.setScope('default');
     },
 
-    willDestroy: function () {
+    willDestroy() {
+        this._super(...arguments);
         this._resetKeymasterScope();
     },
 
     actions: {
-        openSelected: function (selected) {
-            var transition = null,
-                self = this;
+        openSelected(selected) {
+            let transition = null;
 
-            if (!selected) { return; }
+            if (!selected) {
+                return;
+            }
 
             if (selected.category === 'Posts' || selected.category === 'Pages') {
-                transition = self.get('_routing.router').transitionTo('editor.edit', selected.id);
+                let id = selected.id.replace('post.', '');
+                transition = this.get('_routing.router').transitionTo('editor.edit', id);
             }
 
             if (selected.category === 'Users') {
-                transition = self.get('_routing.router').transitionTo('team.user', selected.id);
+                let id = selected.id.replace('user.', '');
+                transition = this.get('_routing.router').transitionTo('team.user', id);
             }
 
-            transition.then(function () {
-                if (self.get('_selectize').$control_input.is(':focus')) {
-                    self._setKeymasterScope();
+            if (selected.category === 'Tags') {
+                let id = selected.id.replace('tag.', '');
+                transition = this.get('_routing.router').transitionTo('settings.tags.tag', id);
+            }
+
+            transition.then(() => {
+                if (this.get('_selectize').$control_input.is(':focus')) {
+                    this._setKeymasterScope();
                 }
             });
         },
 
-        focusInput: function () {
+        focusInput() {
             this.get('_selectize').focus();
         },
 
-        onInit: function () {
-            var selectize = this.get('_selectize'),
-                html = '<div class="dropdown-empty-message">Nothing found&hellip;</div>';
+        onInit() {
+            let selectize = this.get('_selectize');
+            let html = '<div class="dropdown-empty-message">Nothing found&hellip;</div>';
 
             selectize.$empty_results_container = $(html);
             selectize.$empty_results_container.hide();
             selectize.$dropdown.append(selectize.$empty_results_container);
         },
 
-        onFocus: function () {
+        onFocus() {
             this._setKeymasterScope();
             this.refreshContent();
         },
 
-        onBlur: function () {
-            var selectize = this.get('_selectize');
+        onBlur() {
+            let selectize = this.get('_selectize');
 
             this._resetKeymasterScope();
             selectize.$empty_results_container.hide();
         },
 
-        onType: function () {
-            var selectize = this.get('_selectize');
+        onType() {
+            let selectize = this.get('_selectize');
 
             if (!selectize.hasOptions) {
                 selectize.open();

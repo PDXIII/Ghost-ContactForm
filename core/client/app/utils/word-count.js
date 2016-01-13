@@ -1,9 +1,8 @@
 // jscs: disable
 /* global XRegExp */
 
-function wordCount(s) {
-
-    var nonANumLetters = new XRegExp("[^\\s\\d\\p{L}]", "g"); // all non-alphanumeric letters regexp
+export default function (s) {
+    let nonANumLetters = new XRegExp("[^\\s\\d\\p{L}]", 'g'); // all non-alphanumeric letters regexp
 
     s = s.replace(/<(.|\n)*?>/g, ' '); // strip tags
     s = s.replace(nonANumLetters, ''); // ignore non-alphanumeric letters
@@ -14,5 +13,3 @@ function wordCount(s) {
 
     return s.split(' ').length;
 }
-
-export default wordCount;

@@ -85,16 +85,16 @@ describe('Admin Routing', function () {
         it('should redirect /signin/ to /ghost/', function (done) {
             request.get('/signin/')
                 .expect('Location', '/ghost/')
-                .expect('Cache-Control', testUtils.cacheRules.public)
-                .expect(302)
+                .expect('Cache-Control', testUtils.cacheRules.year)
+                .expect(301)
                 .end(doEndNoAuth(done));
         });
 
         it('should redirect /admin/ to /ghost/', function (done) {
             request.get('/admin/')
                 .expect('Location', '/ghost/')
-                .expect('Cache-Control', testUtils.cacheRules.public)
-                .expect(302)
+                .expect('Cache-Control', testUtils.cacheRules.year)
+                .expect(301)
                 .end(doEndNoAuth(done));
         });
 
@@ -188,7 +188,7 @@ describe('Admin Routing', function () {
         it('should redirect from /ghost/ to /ghost/setup/ when no user/not installed yet', function (done) {
             request.get('/ghost/')
                 .expect('Location', /ghost\/setup/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(302)
                 .end(doEnd(done));
         });
@@ -196,7 +196,7 @@ describe('Admin Routing', function () {
         it('should redirect from /ghost/signin/ to /ghost/setup/ when no user', function (done) {
             request.get('/ghost/signin/')
                 .expect('Location', /ghost\/setup/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(302)
                 .end(doEnd(done));
         });
@@ -204,7 +204,7 @@ describe('Admin Routing', function () {
         it('should respond with html for /ghost/setup/', function (done) {
             request.get('/ghost/setup/')
                 .expect('Content-Type', /html/)
-                .expect('Cache-Control', testUtils.cacheRules['private'])
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200)
                 .end(doEnd(done));
         });

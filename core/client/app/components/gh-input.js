@@ -1,8 +1,8 @@
 import Ember from 'ember';
 import TextInputMixin from 'ghost/mixins/text-input';
 
-var Input = Ember.TextField.extend(TextInputMixin, {
+const {TextField} = Ember;
+
+export default TextField.extend(TextInputMixin, {
     classNames: 'gh-input'
 });
-
-export default Input;
