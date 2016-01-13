@@ -231,18 +231,13 @@ frontendControllers = {
       return res.render(defaultPage, data);
     }
   },
+
   // custom code for adding a contact form with nodemailer part 2
   // action for posting the contact form
-  submitContactForm: function submitContactForm (req, res) {
+  submitContactForm: function (req, res) {
     'use strict';
     // this could be important for production
-    res.header('Access-Control-Allow-Origin', '*');
-
-    var fullName = req.query.firstName + ' '+ req.query.lastName;
-    var messageBody = '<p><b>' + fullName + ' schrieb: </b></p>'
-    + '<blockquote>' + req.query.messageBody + "</blockquote>"
-    + '<p><b>Telefon: </b>' + req.query.phone + '</p>'
-    + '<p><b>E-Mail: </b><a href="'+ req.query.email + '">' + req.query.email + '</a></p>';
+    res.header("Access-Control-Allow-Origin", "*");
 
     var mailOptions = {
       // the req.query must be in synch with
@@ -255,13 +250,14 @@ frontendControllers = {
       to: config.mail.options.auth.user,
 
       // put the sender in cc
-      cc: req.query.email,
+      // cc: req.query.email,
 
+      // subject
       // subject: req.query.subject,
-      subject: 'Anfrage von ' + fullName + ' über das Kontaktformular.',
+      subject: req.query.name + ' likes to contact Peter Sekan via the web site',
 
       // email message body
-      html: messageBody
+      html: req.query.messageBody + ' - From: ' + req.query.name
     };
 
     //sending the email
