@@ -231,7 +231,7 @@ frontendControllers = {
       return res.render(defaultPage, data);
     }
   },
-  
+
   // custom code for adding a contact form with nodemailer part 2
   // action for posting the contact form
   submitContactForm: function (req, res) {
@@ -243,7 +243,7 @@ frontendControllers = {
       var messageBody = '<p><b>' + fullName + ' schrieb: </b></p>'
         + '<blockquote>' + req.query.messageBody + "</blockquote>"
         + '<p><b>Telefon: </b>' + req.query.phone + '</p>'
-        + '<p><b>E-Mail: </b><a href="'+ req.query.email + '">' + req.query.email + '</a></p>';
+        + '<p><b>E-Mail: </b><a href="mailto:'+ req.query.email + '">' + req.query.email + '</a></p>';
 
       var mailOptions = {
           // the req.query must be in synch with
